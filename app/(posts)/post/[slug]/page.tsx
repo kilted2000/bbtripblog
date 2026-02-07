@@ -1,9 +1,12 @@
-import pool from '@/lib/db'
+import { query } from '@/lib/db'
 import { Post } from '@/types/database'
 import LikeButton from '@/components/LikeButton'
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
-  const result = await pool.query('SELECT * FROM posts WHERE slug = $1', [slug])
+  const result = await query<Post>(
+    'SELECT * FROM posts WHERE slug = $1', 
+    [slug]
+  )
   return result.rows[0] || null
 }
 

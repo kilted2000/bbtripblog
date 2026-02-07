@@ -1,9 +1,12 @@
-import pool from '@/lib/db'
-import { Post } from '@/types/database'
+import { query } from '@/lib/db'
+import { PostPreview } from '@/types/database'
 import Link from 'next/link'
 
-async function getPosts(): Promise<Post[]> {
-  const result = await pool.query('SELECT * FROM posts ORDER BY created_at DESC')
+async function getPosts(): Promise<PostPreview[]> {
+  const result = await query<PostPreview>(
+    'SELECT id, slug, title, created_at, status FROM posts WHERE status = $1 ORDER BY created_at DESC',
+    ['published']
+  )
   return result.rows
 }
 
@@ -21,10 +24,12 @@ export default async function ExplorePage() {
             className="block border p-4 rounded hover:border-blue-500 transition"
           >
             <h2 className="text-xl font-semibold">{post.title}</h2>
-            <p className="text-gray-600">{post.content}</p>
             <p className="text-sm text-gray-400 mt-2">
               {new Date(post.created_at).toLocaleDateString()}
             </p>
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+              {post.status}
+            </span>
           </Link>
         ))}
       </div>

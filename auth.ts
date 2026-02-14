@@ -7,6 +7,20 @@ import { User } from './types/database'
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -17,7 +31,6 @@ export const { auth, signIn, signOut } = NextAuth({
           return null
         }
         
-        // Get user from database
         const result = await query<User>(
           'SELECT * FROM users WHERE email = $1',
           [email]
@@ -29,14 +42,12 @@ export const { auth, signIn, signOut } = NextAuth({
           return null
         }
         
-        // Verify password
         const passwordMatch = await bcrypt.compare(password, user.password_hash)
         
         if (!passwordMatch) {
           return null
         }
         
-        // Return user object (will be stored in JWT)
         return {
           id: user.id.toString(),
           name: user.username,

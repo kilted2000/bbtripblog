@@ -1,8 +1,8 @@
 'use client'
 
-import { createPost, type ActionResult } from '@/app/actions/posts'
-import { useFormStatus } from 'react-dom'
 import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
+import { createPost, type ActionResult } from '@/app/actions/posts'
 
 const initialState: ActionResult = { success: true }
 

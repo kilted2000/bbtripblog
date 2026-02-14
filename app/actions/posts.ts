@@ -4,6 +4,7 @@ import { query } from '@/lib/db'
 import { Post } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { auth } from '@/auth'
 
 export type ActionResult = {
   success: boolean
@@ -15,6 +16,17 @@ export async function createPost(
   prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
+  // Get the logged-in user
+  const session = await auth()
+  
+  console.log('Session in createPost:', session)
+  console.log('User ID:', session?.user?.id)
+  
+  if (!session?.user?.id) {
+    return { success: false, error: 'You must be logged in to create a post' }
+  }
+  
+  const userId = parseInt(session.user.id)
   const title = formData.get('title') as string
   const content = formData.get('content') as string
   
@@ -44,7 +56,7 @@ export async function createPost(
     
     await query<Post>(
       'INSERT INTO posts (slug, title, content, status, author_id) VALUES ($1, $2, $3, $4, $5)',
-      [slug, title, content, 'published', 1]
+      [slug, title, content, 'published', userId]
     )
     
     revalidatePath('/explore')
@@ -53,6 +65,5 @@ export async function createPost(
     return { success: false, error: 'Failed to create post. Please try again.' }
   }
   
-  // Redirect happens AFTER try-catch
   redirect('/post/' + slug)
 }

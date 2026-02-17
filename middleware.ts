@@ -2,14 +2,18 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Check if user has session token
   const sessionToken = request.cookies.get('authjs.session-token') || 
                        request.cookies.get('__Secure-authjs.session-token')
   
   const isLoggedIn = !!sessionToken
-  const isOnCreatePost = request.nextUrl.pathname.startsWith('/create')
+  const pathname = request.nextUrl.pathname
   
-  if (isOnCreatePost && !isLoggedIn) {
+  const protectedRoutes = ['/create', '/settings']
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route)
+  )
+  
+  if (isProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   

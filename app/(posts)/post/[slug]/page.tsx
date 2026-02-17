@@ -1,10 +1,12 @@
 import { query } from '@/lib/db'
 import { Post } from '@/types/database'
 import LikeButton from '@/components/LikeButton'
+import CommentSection from '@/components/CommentSection'
+import { notFound } from 'next/navigation'
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
   const result = await query<Post>(
-    'SELECT * FROM posts WHERE slug = $1', 
+    'SELECT * FROM posts WHERE slug = $1',
     [slug]
   )
   return result.rows[0] || null
@@ -19,7 +21,7 @@ export default async function PostPage({
   const post = await getPostBySlug(slug)
   
   if (!post) {
-    return <div className="p-8">Post not found</div>
+    notFound()
   }
   
   return (
@@ -32,6 +34,9 @@ export default async function PostPage({
         <p>{post.content}</p>
       </div>
       <LikeButton postSlug={slug} />
+      
+      {/* Comments Section */}
+      <CommentSection postId={post.id} slug={slug} />
     </div>
   )
 }
